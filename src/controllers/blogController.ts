@@ -423,15 +423,6 @@ export const updateBlog = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
-    const {
-      title,
-      description,
-      content,
-      categories,
-      tags,
-      readingTime,
-      featured = false,
-    } = req.body;
 
     if (!userId) {
       return res.status(401).json({ message: "Not authorized" });
@@ -451,38 +442,81 @@ export const updateBlog = async (req: AuthRequest, res: Response) => {
         .json({ message: "Blog not found or unauthorized" });
     }
 
-    // Get the image URL from the upload middleware or keep existing
-    const imageUrl = req.file?.path || req.body.image || blog.image;
+    // Parse categories and tags only if they are provided
+    let categories, tags;
 
-    // Update the blog
+    if (req.body.categories !== undefined) {
+      const parseArrayField = (field: any) => {
+        if (typeof field === "string") {
+          try {
+            return JSON.parse(field);
+          } catch (error) {
+            return field.split(",").map((item) => item.trim());
+          }
+        }
+        return Array.isArray(field) ? field : [];
+      };
+      categories = parseArrayField(req.body.categories);
+    }
+
+    if (req.body.tags !== undefined) {
+      const parseArrayField = (field: any) => {
+        if (typeof field === "string") {
+          try {
+            return JSON.parse(field);
+          } catch (error) {
+            return field.split(",").map((item) => item.trim());
+          }
+        }
+        return Array.isArray(field) ? field : [];
+      };
+      tags = parseArrayField(req.body.tags);
+    }
+
+    // Prepare update data with only provided fields
+    const updateData: any = {};
+
+    // Only include fields that are explicitly provided (including empty values)
+    if (req.body.title !== undefined) updateData.title = req.body.title;
+    if (req.body.description !== undefined)
+      updateData.description = req.body.description;
+    if (req.body.content !== undefined) updateData.content = req.body.content;
+    if (req.body.readingTime !== undefined)
+      updateData.readingTime = Number(req.body.readingTime);
+    if (req.body.featured !== undefined)
+      updateData.featured = Boolean(req.body.featured);
+
+    // Handle image update
+    if (req.file?.path) {
+      updateData.image = req.file.path;
+    } else if (req.body.image !== undefined) {
+      updateData.image = req.body.image;
+    }
+
+    // Update the blog with provided fields
     const updatedBlog = await prisma.blog.update({
       where: { id },
-      data: {
-        title,
-        description,
-        content,
-        image: imageUrl,
-        readingTime: Number(readingTime),
-        featured: Boolean(featured),
-      },
+      data: updateData,
     });
 
-    // Update categories if provided
-    if (categories && Array.isArray(categories)) {
-      // Remove existing categories
+    // Update categories only if provided
+    if (categories !== undefined) {
       await prisma.categoryOnBlog.deleteMany({
         where: { blogId: id },
       });
-      await handleCategories(id, categories);
+      if (categories.length > 0) {
+        await handleCategories(id, categories);
+      }
     }
 
-    // Update tags if provided
-    if (tags && Array.isArray(tags)) {
-      // Remove existing tags
+    // Update tags only if provided
+    if (tags !== undefined) {
       await prisma.tagOnBlog.deleteMany({
         where: { blogId: id },
       });
-      await handleTags(id, tags);
+      if (tags.length > 0) {
+        await handleTags(id, tags);
+      }
     }
 
     // Fetch updated blog with relations
@@ -510,9 +544,16 @@ export const updateBlog = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Format the response
+    const formattedBlog = {
+      ...completeBlog,
+      categories: completeBlog?.categories.map((c) => c.category.name) || [],
+      tags: completeBlog?.tags.map((t) => t.tag.name) || [],
+    };
+
     return res.status(200).json({
       message: "Blog updated successfully",
-      blog: completeBlog,
+      blog: formattedBlog,
     });
   } catch (error) {
     console.error("Update blog error:", error);

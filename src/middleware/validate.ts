@@ -160,3 +160,87 @@ export const validateBlogCreation = [
 
   handleValidationErrors,
 ];
+
+/**
+ * Validate blog update
+ */
+export const validateBlogUpdate = [
+  // Only validate fields if they are present in the request
+  body("title")
+    .if(body("title").exists())
+    .trim()
+    .isLength({ min: 5, max: 200 })
+    .withMessage("Title must be between 5 and 200 characters"),
+
+  body("description")
+    .if(body("description").exists())
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Description must be between 10 and 500 characters"),
+
+  body("content")
+    .if(body("content").exists())
+    .trim()
+    .isLength({ min: 50 })
+    .withMessage("Content must be at least 50 characters"),
+
+  body("categories")
+    .if(body("categories").exists())
+    .custom((value) => {
+      if (typeof value === "string") {
+        try {
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed)) {
+            throw new Error("Categories must be an array");
+          }
+          return true;
+        } catch (error) {
+          if (value.includes(",")) {
+            return true;
+          }
+          throw new Error(
+            "Categories must be an array or comma-separated string"
+          );
+        }
+      }
+      if (Array.isArray(value)) {
+        return true;
+      }
+      throw new Error("Categories must be an array or comma-separated string");
+    }),
+
+  body("tags")
+    .if(body("tags").exists())
+    .custom((value) => {
+      if (typeof value === "string") {
+        try {
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed)) {
+            throw new Error("Tags must be an array");
+          }
+          return true;
+        } catch (error) {
+          if (value.includes(",")) {
+            return true;
+          }
+          throw new Error("Tags must be an array or comma-separated string");
+        }
+      }
+      if (Array.isArray(value)) {
+        return true;
+      }
+      throw new Error("Tags must be an array or comma-separated string");
+    }),
+
+  body("readingTime")
+    .if(body("readingTime").exists())
+    .isInt({ min: 1 })
+    .withMessage("Reading time must be a positive integer"),
+
+  body("featured")
+    .if(body("featured").exists())
+    .isBoolean()
+    .withMessage("Featured must be a boolean"),
+
+  handleValidationErrors,
+];
