@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  bio           String?
+  avatar        String?
+  googleId      String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  blogs         Blog[]
+  comments      Comment[]
+  followers     Follow[]  @relation("Following")
+  following     Follow[]  @relation("Followers")
+  viewedBlogs   BlogView[]
+  profileViews  Int       @default(0)
+}
+
+model Blog {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  title       String
+  description String
+  date        DateTime
+  image       String
+  content     String
+  readingTime Int
+  featured    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  categories  CategoryOnBlog[]
+  tags        TagOnBlog[]
+  comments    Comment[]
+  views       BlogView[]
+  viewCount   Int       @default(0)
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  blogId    String
+  authorId  String
+  blog      Blog     @relation(fields: [blogId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Following", fields: [followerId], references: [id])
+  following   User     @relation("Followers", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model BlogView {
+  id        String   @id @default(uuid())
+  blogId    String
+  userId    String
+  createdAt DateTime @default(now())
+  blog      Blog     @relation(fields: [blogId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([blogId, userId])
+}
+
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  blogs CategoryOnBlog[]
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  blogs TagOnBlog[]
+}
+
+model CategoryOnBlog {
+  blogId     String
+  categoryId String
+  blog       Blog     @relation(fields: [blogId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([blogId, categoryId])
+}
+
+model TagOnBlog {
+  blogId String
+  tagId  String
+  blog   Blog   @relation(fields: [blogId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([blogId, tagId])
+}
