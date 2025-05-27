@@ -9,15 +9,29 @@ import { handleCategories, handleTags } from "../utils/blogHelpers";
  */
 export const createBlog = async (req: AuthRequest, res: Response) => {
   try {
+    // Parse categories and tags from string or array
+    const parseArrayField = (field: any) => {
+      if (typeof field === "string") {
+        try {
+          // Try parsing as JSON first
+          return JSON.parse(field);
+        } catch (error) {
+          // If not JSON, split comma-separated string
+          return field.split(",").map((item) => item.trim());
+        }
+      }
+      return Array.isArray(field) ? field : [];
+    };
+
+    const categories = parseArrayField(req.body.categories);
+    const tags = parseArrayField(req.body.tags);
+
     const {
       title,
       description,
       content,
-      categories,
-      tags,
       readingTime,
       featured = false,
-      author,
     } = req.body;
 
     // Generate a slug from the title
