@@ -1,8 +1,16 @@
-import express from 'express';
-import { googleAuth } from '../controllers/authController';
+import express from "express";
+import { googleAuth, logout, getMe } from "../controllers/authController";
+import { authenticate } from "../middleware/auth";
 
 const router = express.Router();
 
-router.post('/google', googleAuth);
+// Google authentication
+router.post("/google", googleAuth);
+
+// Logout endpoint
+router.post("/logout", logout);
+router.post("/refresh", refreshToken);
+// Get current user (protected)
+router.get("/me", authenticate, getMe);
 
 export default router;
