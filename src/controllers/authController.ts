@@ -6,7 +6,6 @@ import { AuthRequest } from "../types";
 
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
-    // The authenticate middleware already populated req.user
     if (!req.user) {
       return res.status(401).json({ message: "Not authenticated" });
     }
@@ -22,9 +21,10 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// JWT Secret - make sure to set this in your environment variables
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-const JWT_EXPIRES_IN = "15m"; // 15 minutes
+const REFRESH_SECRET = process.env.REFRESH_SECRET || "your-refresh-secret";
+const ACCESS_TOKEN_EXPIRES = "15m"; // 15 minutes
+const REFRESH_TOKEN_EXPIRES = "7d"; // 7 days
 
 export const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -57,22 +57,40 @@ export const googleAuth = async (req: Request, res: Response) => {
       });
     }
 
-    // Create JWT access token
+    // Create access token (short-lived)
     const accessToken = jwt.sign(
       {
         userId: user.id,
         email: user.email,
       },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: ACCESS_TOKEN_EXPIRES }
     );
 
-    // Set HTTP-only cookie
+    // Create refresh token (long-lived)
+    const refreshToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+      },
+      REFRESH_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRES }
+    );
+
+    // Set HTTP-only cookies
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 15 * 60 * 1000, // 15 minutes in milliseconds
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: "/",
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
     });
 
@@ -92,10 +110,92 @@ export const googleAuth = async (req: Request, res: Response) => {
   }
 };
 
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refresh_token;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token required" });
+    }
+
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as {
+      userId: string;
+      email: string;
+    };
+
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        bio: true,
+        avatar: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    // Create new access token
+    const newAccessToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRES }
+    );
+
+    // Set new access token cookie
+    res.cookie("access_token", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: "/",
+    });
+
+    return res.status(200).json({
+      message: "Token refreshed successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+
+    // Clear cookies if refresh token is invalid
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return res.status(401).json({ message: "Invalid refresh token" });
+  }
+};
+
 export const logout = async (req: Request, res: Response) => {
   try {
-    // Clear the access token cookie
+    // Clear both cookies
     res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

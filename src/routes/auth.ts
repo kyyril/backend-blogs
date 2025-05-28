@@ -1,5 +1,10 @@
 import express from "express";
-import { googleAuth, logout, getMe } from "../controllers/authController";
+import {
+  googleAuth,
+  logout,
+  getMe,
+  refreshToken,
+} from "../controllers/authController";
 import { authenticate } from "../middleware/auth";
 
 const router = express.Router();
