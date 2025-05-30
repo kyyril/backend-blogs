@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.get("/:userId", getUserProfile);
 router.post("/:userId/follow", authenticate, followUser);
-router.delete("/:userId/follow", authenticate, unfollowUser);
+router.delete("/:userId/unfollow", authenticate, unfollowUser);
 router.get("/:userId/follow-status", authenticate, getFollowStatus);
 
 export default router;

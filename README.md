@@ -5,12 +5,14 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ## Features
 
 - **User Authentication & Profiles**
+
   - Google OAuth authentication
   - View user profiles with stats
   - Follow/unfollow other users
   - Track profile views
 
 - **Blog Management**
+
   - Create, read, update, and delete blog posts
   - Upload blog images to Cloudinary
   - View all blogs with pagination
@@ -19,6 +21,7 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
   - Track blog views and engagement
 
 - **Social Features**
+
   - Follow other bloggers
   - View blogger's posts
   - Comment on blog posts
@@ -43,23 +46,28 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ### Authentication
 
 #### Google Authentication
+
 - **URL**: `/api/auth/google`
 - **Method**: `POST`
 - **Body**:
+
 ```json
 {
   "token": "google-id-token"
 }
 ```
+
 - **Response**: User object
 
 ### Blogs
 
 #### Create Blog
+
 - **URL**: `/api/blogs`
 - **Method**: `POST`
 - **Auth**: Required
 - **Body**: Form data with the following fields:
+
 ```json
 {
   "title": "Getting Started with Next.js 15 and App Router",
@@ -74,33 +82,45 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ```
 
 #### Update Blog
+
 - **URL**: `/api/blogs/:id`
 - **Method**: `PUT`
 - **Auth**: Required
 - **Body**: Same as Create Blog
 
 #### Delete Blog
+
 - **URL**: `/api/blogs/:id`
 - **Method**: `DELETE`
 - **Auth**: Required
 
 #### Get All Blogs
+
 - **URL**: `/api/blogs?page=1&limit=10`
 - **Method**: `GET`
 
+#### Get Blog by ID
+
+- **URL**: `/api/blogs/:id`
+- **Method**: `GET`
+
 #### Get Blog by Slug
+
 - **URL**: `/api/blogs/:slug`
 - **Method**: `GET`
 
 #### Search Blogs
+
 - **URL**: `/api/blogs/search?query=next.js&page=1&limit=10`
 - **Method**: `GET`
 
 #### Get Blogs by Category
+
 - **URL**: `/api/blogs/category/:category?page=1&limit=10`
 - **Method**: `GET`
 
 #### Record Blog View
+
 - **URL**: `/api/blogs/:id/view`
 - **Method**: `POST`
 - **Auth**: Required
@@ -108,9 +128,11 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ### Users
 
 #### Get User Profile
+
 - **URL**: `/api/users/:userId`
 - **Method**: `GET`
 - **Response**:
+
 ```json
 {
   "id": "user-uuid",
@@ -124,27 +146,39 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
     "following": 89,
     "blogs": 25
   },
-  "blogs": [/* array of blog objects */]
+  "blogs": [
+    /* array of blog objects */
+  ]
 }
 ```
 
 #### Follow User
+
 - **URL**: `/api/users/:userId/follow`
 - **Method**: `POST`
 - **Auth**: Required
 
 #### Unfollow User
+
 - **URL**: `/api/users/:userId/follow`
 - **Method**: `DELETE`
+- **Auth**: Required
+
+#### following Status
+
+- **URL**: `/api/users/:userId/follow-status`
+- **Method**: `GET`
 - **Auth**: Required
 
 ### Comments
 
 #### Create Comment
+
 - **URL**: `/api/blogs/:blogId/comments`
 - **Method**: `POST`
 - **Auth**: Required
 - **Body**:
+
 ```json
 {
   "content": "Great article! Very informative."
@@ -152,9 +186,11 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ```
 
 #### Get Comments
+
 - **URL**: `/api/blogs/:blogId/comments?page=1&limit=10`
 - **Method**: `GET`
 - **Response**:
+
 ```json
 {
   "comments": [
@@ -180,12 +216,14 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ## Setup and Installation
 
 1. **Clone the repository**
+
 ```bash
-git clone https://github.com/yourusername/blog-api.git
-cd blog-api
+git clone https://github.com/kyyril/backend-blogs.git
+cd backend-blogs
 ```
 
 2. **Install dependencies**
+
 ```bash
 npm install
 ```
@@ -193,6 +231,7 @@ npm install
 3. **Set up environment variables**
 
 Create a `.env` file with the following variables:
+
 ```
 # Server
 PORT=5000
@@ -215,11 +254,13 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret_here
 ```
 
 4. **Set up the database**
+
 ```bash
 npx prisma migrate dev
 ```
 
 5. **Start the development server**
+
 ```bash
 npm run dev
 ```

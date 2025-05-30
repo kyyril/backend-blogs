@@ -242,6 +242,61 @@ export const getBlogBySlug = async (req: Request, res: Response) => {
 };
 
 /**
+ * Get a blog by ID
+ */
+export const getBlogById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ID format (optional - depends on your ID format)
+    if (!id) {
+      return res.status(400).json({ message: "Blog ID is required" });
+    }
+
+    // Find the blog by ID
+    const blog = await prisma.blog.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            bio: true,
+            avatar: true,
+          },
+        },
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // Format the response
+    const formattedBlog = {
+      ...blog,
+      categories: blog.categories.map((c) => c.category.name),
+      tags: blog.tags.map((t) => t.tag.name),
+    };
+
+    return res.status(200).json(formattedBlog);
+  } catch (error) {
+    console.error("Get blog by ID error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
  * Search blogs
  */
 export const searchBlogs = async (req: Request, res: Response) => {
