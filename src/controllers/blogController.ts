@@ -247,13 +247,20 @@ export const getBlogBySlug = async (req: Request, res: Response) => {
 export const getBlogById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    console.log("1. Incoming request for blog ID:", id);
 
-    // Validate ID format (optional - depends on your ID format)
-    if (!id) {
-      return res.status(400).json({ message: "Blog ID is required" });
+    // Validate UUID format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      console.log("2. Invalid UUID format");
+      return res.status(400).json({
+        message: "Invalid blog ID format - must be a valid UUID",
+        providedId: id,
+      });
     }
 
-    // Find the blog by ID
+    // Use Prisma's findUnique with complete blog data
     const blog = await prisma.blog.findUnique({
       where: { id },
       include: {
@@ -275,24 +282,52 @@ export const getBlogById = async (req: Request, res: Response) => {
             tag: true,
           },
         },
+        _count: {
+          select: {
+            views: true,
+          },
+        },
       },
     });
 
+    console.log("3. Prisma query result:", blog ? "Found" : "Not found");
+
     if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
+      return res.status(404).json({
+        message: "Blog not found",
+        requestedId: id,
+        tip: "Please verify that the blog ID exists in the database",
+      });
     }
 
-    // Format the response
+    // Format the response data
     const formattedBlog = {
       ...blog,
       categories: blog.categories.map((c) => c.category.name),
       tags: blog.tags.map((t) => t.tag.name),
+      viewCount: blog._count.views,
+      author: {
+        id: blog.author.id,
+        name: blog.author.name,
+        bio: blog.author.bio,
+        avatar: blog.author.avatar,
+      },
     };
 
+    console.log("4. Successfully formatted blog data");
     return res.status(200).json(formattedBlog);
   } catch (error) {
-    console.error("Get blog by ID error:", error);
-    return res.status(500).json({ message: "Server error" });
+    console.error("Error in getBlogById:", {
+      error,
+      stack: error instanceof Error ? error.stack : undefined,
+      params: req.params,
+    });
+
+    return res.status(500).json({
+      message: "Internal server error while fetching blog",
+      error: error instanceof Error ? error.message : "Unknown error",
+      requestedId: req.params.id,
+    });
   }
 };
 
