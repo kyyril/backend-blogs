@@ -181,7 +181,8 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 
 ```json
 {
-  "content": "Great article! Very informative."
+  "content": "Great article! Very informative.",
+  "parentId": "optional-parent-comment-id" // Include for replies
 }
 ```
 
@@ -198,11 +199,27 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
       "id": "comment-uuid",
       "content": "Great article! Very informative.",
       "createdAt": "2024-01-20T12:00:00Z",
+      "authorId": "user-uuid",
+      "parentId": null,
       "author": {
         "id": "user-uuid",
         "name": "John Doe",
         "avatar": "https://example.com/avatar.jpg"
-      }
+      },
+      "replies": [
+        {
+          "id": "reply-uuid",
+          "content": "Thanks for your feedback!",
+          "createdAt": "2024-01-20T12:30:00Z",
+          "authorId": "author-uuid",
+          "parentId": "comment-uuid",
+          "author": {
+            "id": "author-uuid",
+            "name": "Jane Smith",
+            "avatar": "https://example.com/jane-avatar.jpg"
+          }
+        }
+      ]
     }
   ],
   "pagination": {
@@ -213,73 +230,26 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 }
 ```
 
-## Setup and Installation
+#### Update Comment
 
-1. **Clone the repository**
+- **URL**: `/api/comments/:id`
+- **Method**: `PATCH`
+- **Auth**: Required (only comment owner)
+- **Body**:
 
-```bash
-git clone https://github.com/kyyril/backend-blogs.git
-cd backend-blogs
+```json
+{
+  "content": "Updated comment content"
+}
 ```
 
-2. **Install dependencies**
+#### Delete Comment
 
-```bash
-npm install
-```
-
-3. **Set up environment variables**
-
-Create a `.env` file with the following variables:
+- **URL**: `/api/comments/:id`
+- **Method**: `DELETE`
+- **Auth**: Required (only comment owner)
+- **Response**: Status 204 (No Content)
 
 ```
-# Server
-PORT=5000
-NODE_ENV=development
 
-# Supabase
-DATABASE_URL=your_supabase_postgres_connection_string
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-
-# Google Auth
-GOOGLE_CLIENT_ID=your_google_client_id_here
-GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name_here
-CLOUDINARY_API_KEY=your_cloudinary_api_key_here
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret_here
-```
-
-4. **Set up the database**
-
-```bash
-npx prisma migrate dev
-```
-
-5. **Start the development server**
-
-```bash
-npm run dev
-```
-
-## Project Structure
-
-```
-/
-├── src/
-│   ├── config/          # Configuration files
-│   ├── controllers/     # Route controllers
-│   ├── middleware/      # Middleware functions
-│   ├── routes/          # API routes
-│   ├── utils/           # Utility functions
-│   ├── types/          # TypeScript type definitions
-│   └── index.ts        # Application entry point
-├── prisma/
-│   └── schema.prisma   # Prisma database schema
-├── .env                # Environment variables
-├── tsconfig.json       # TypeScript configuration
-└── package.json       # Project dependencies
 ```
