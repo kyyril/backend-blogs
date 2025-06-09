@@ -9,7 +9,6 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
   - Google OAuth authentication
   - View user profiles with stats
   - Follow/unfollow other users
-  - Track profile views
 
 - **Blog Management**
 
@@ -29,7 +28,6 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 
 - **Analytics**
   - Blog view counts
-  - Profile view tracking
   - Follower statistics
 
 ## Tech Stack
@@ -59,6 +57,108 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 
 - **Response**: User object
 
+---
+
+## Authentication
+
+### Google Authentication
+
+This section details the Google authentication flow, allowing users to sign in using their Google accounts.
+
+- **URL**: `/api/auth/google`
+- **Method**: `POST`
+- **Body**:
+
+  ```json
+  {
+    "token": "google-id-token"
+  }
+  ```
+
+  The `token` field should contain the ID token obtained from the Google Sign-In client.
+
+- **Response**:
+
+  ```json
+  {
+    "message": "Google authentication successful",
+    "user": {
+      "id": "user-id",
+      "name": "User Name",
+      "email": "user@example.com",
+      "bio": "User bio (if available)",
+      "avatar": "URL to user's avatar"
+    }
+  }
+  ```
+
+  Upon successful authentication, the server sets `access_token` and `refresh_token` as HTTP-only cookies and returns the authenticated user object.
+
+### Get Authenticated User
+
+This endpoint allows a client to retrieve information about the currently authenticated user.
+
+- **URL**: `/api/auth/me`
+- **Method**: `GET`
+- **Authentication**: Requires a valid `access_token` cookie.
+- **Response**:
+
+  ```json
+  {
+    "user": {
+      "id": "user-id",
+      "name": "User Name",
+      "email": "user@example.com",
+      "bio": "User bio (if available)",
+      "avatar": "URL to user's avatar"
+    }
+  }
+  ```
+
+  Returns the user object if authenticated, otherwise a `401 Unauthorized` error.
+
+### Refresh Access Token
+
+This endpoint allows clients to obtain a new access token using a valid refresh token when the current access token expires.
+
+- **URL**: `/api/auth/refresh-token`
+- **Method**: `POST`
+- **Authentication**: Requires a valid `refresh_token` cookie.
+- **Response**:
+
+  ```json
+  {
+    "message": "Token refreshed successfully",
+    "user": {
+      "id": "user-id",
+      "name": "User Name",
+      "email": "user@example.com",
+      "bio": "User bio (if available)",
+      "avatar": "URL to user's avatar"
+    }
+  }
+  ```
+
+  Upon successful token refresh, a new `access_token` cookie is set, and the user object is returned. If the refresh token is invalid or expired, both `access_token` and `refresh_token` cookies are cleared, and a `401 Unauthorized` error is returned.
+
+### Logout
+
+This endpoint logs out the user by clearing the authentication cookies.
+
+- **URL**: `/api/auth/logout`
+- **Method**: `POST`
+- **Response**:
+
+  ```json
+  {
+    "message": "Logout successful"
+  }
+  ```
+
+  Clears both `access_token` and `refresh_token` HTTP-only cookies.
+
+---
+
 ### Blogs
 
 #### Create Blog
@@ -83,14 +183,14 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 
 #### Update Blog
 
-- **URL**: `/api/blogs/:id`
+- **URL**: `/api/blogs/blog/:id`
 - **Method**: `PUT`
 - **Auth**: Required
 - **Body**: Same as Create Blog
 
 #### Delete Blog
 
-- **URL**: `/api/blogs/:id`
+- **URL**: `/api/blogs/blog/:id`
 - **Method**: `DELETE`
 - **Auth**: Required
 
@@ -101,7 +201,7 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 
 #### Get Blog by ID
 
-- **URL**: `/api/blogs/:id`
+- **URL**: `/api/blogs/blog/:id`
 - **Method**: `GET`
 
 #### Get Blog by Slug
@@ -121,7 +221,7 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 
 #### Record Blog View
 
-- **URL**: `/api/blogs/:id/view`
+- **URL**: `/api/blogs/blog/:id/view`
 - **Method**: `POST`
 - **Auth**: Required
 
@@ -253,3 +353,17 @@ A RESTful API backend for a blog application built with TypeScript, Express.js, 
 ```
 
 ```
+
+### TODO
+
+## notification
+
+Flow Notifikasi Komentar/like blog (Tanpa Real-Time)
+1️⃣ User A menulis komentar di artikel blog/like blog milik User B melalui frontend.
+➡️ frontend kirim request ke Express.js (POST /api/comments).
+2️⃣ Express.js menyimpan komentar ke database.
+➡️ Setelah komentar disimpan, Express.js juga menyimpan notifikasi untuk User B (post owner).
+3️⃣ User B membuka halaman notifikasi di frontend.
+➡️ frontend melakukan GET request ke Express.js (GET /api/notifications?userId=userB) untuk mengambil notifikasi.
+4️⃣ User B membaca notifikasi (misalnya klik).
+➡️ frontend kirim PATCH request ke Express.js (PATCH /api/notifications/:id) untuk menandai notifikasi sudah dibaca.
