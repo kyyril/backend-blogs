@@ -46,14 +46,17 @@ model Blog {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   blogId    String
   authorId  String
-  blog      Blog     @relation(fields: [blogId], references: [id])
-  author    User     @relation(fields: [authorId], references: [id])
+  parentId  String?   // Add this field for nested comments
+  blog      Blog      @relation(fields: [blogId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
 }
 
 model Follow {

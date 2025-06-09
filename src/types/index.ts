@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request } from "express";
 
 /**
  * Extended Request interface with user property
@@ -36,4 +36,43 @@ export interface BlogPayload {
   tags: string[];
   readingTime: number;
   featured: boolean;
+}
+
+/**
+ * Comment payload interface
+ */
+export interface CommentPayload {
+  content: string;
+  parentId?: string;
+}
+
+/**
+ * Comment response interface
+ */
+export interface CommentResponse {
+  id: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  blogId: string;
+  authorId: string;
+  parentId: string | null;
+  author: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  replies?: CommentResponse[];
+}
+
+/**
+ * Paginated comments response interface
+ */
+export interface PaginatedCommentsResponse {
+  comments: CommentResponse[];
+  pagination: {
+    total: number;
+    pages: number;
+    current: number;
+  };
 }
