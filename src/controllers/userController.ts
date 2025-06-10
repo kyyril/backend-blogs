@@ -173,24 +173,34 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       anotherAcc,
     }: UpdateUserInput = req.body;
 
+    // Get the uploaded avatar file from multer
     const avatarFile = req.file;
-    let avatarUrl = undefined;
+    let avatarUpdate = {};
 
     if (avatarFile) {
-      avatarUrl = avatarFile.path;
+      // If new avatar was uploaded, use its Cloudinary URL
+      avatarUpdate = {
+        avatar: avatarFile.path,
+      };
+    } else if (req.body.avatar === null) {
+      // If avatar was explicitly set to null, remove avatar
+      avatarUpdate = {
+        avatar: null,
+      };
     }
+    // If no avatar file and no explicit null, keep existing avatar
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         name: name || undefined,
         bio: bio || undefined,
-        avatar: avatarUrl || undefined,
         country: country || undefined,
         twitterAcc: twitterAcc || undefined,
         githubAcc: githubAcc || undefined,
         linkedinAcc: linkedinAcc || undefined,
         anotherAcc: anotherAcc || undefined,
+        ...avatarUpdate,
       },
       select: {
         id: true,

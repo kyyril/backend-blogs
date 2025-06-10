@@ -12,12 +12,18 @@ import {
 } from "../controllers/blogController";
 import { authenticate } from "../middleware/auth";
 import { validateBlogCreation } from "../middleware/validate";
-import { uploadImage } from "../middleware/upload";
+import { uploadBlogImage } from "../middleware/upload";
 
 const router = express.Router();
 
 // Collection routes
-router.post("/", authenticate, uploadImage, validateBlogCreation, createBlog);
+router.post(
+  "/",
+  authenticate,
+  uploadBlogImage,
+  validateBlogCreation,
+  createBlog
+);
 router.get("/", getAllBlogs);
 router.get("/search", searchBlogs);
 router.get("/category/:category", getBlogsByCategory);
@@ -27,7 +33,7 @@ router.get("/blog/:id", getBlogById);
 router.put(
   "/blog/:id",
   authenticate,
-  uploadImage,
+  uploadBlogImage,
   validateBlogCreation,
   updateBlog
 );
