@@ -8,49 +8,51 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String
-  bio           String?
-  avatar        String?
-  country       String?
-  twitterAcc    String?   
-  githubAcc     String?   
-  linkedinAcc   String?   
-  anotherAcc    String?
-  googleId      String    @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  blogs         Blog[]
-  comments      Comment[]
-  followers     Follow[]  @relation("Following")
-  following     Follow[]  @relation("Followers")
-  viewedBlogs   BlogView[]
-  profileViews  Int       @default(0)
+  id           String         @id @default(uuid())
+  email        String         @unique
+  name         String
+  bio          String?
+  avatar       String?
+  country      String?
+  twitterAcc   String?
+  githubAcc    String?
+  linkedinAcc  String?
+  anotherAcc   String?
+  googleId     String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  profileViews Int            @default(0)
+  blogs        Blog[]
+  BlogBookmark BlogBookmark[]
+  BlogLike     BlogLike[]
+  viewedBlogs  BlogView[]
+  comments     Comment[]
+  followers    Follow[]       @relation("Following")
+  following    Follow[]       @relation("Followers")
 }
 
 model Blog {
-  id          String    @id @default(uuid())
-  slug        String    @unique
-  title       String
-  description String
-  date        DateTime
-  image       String
-  content     String
-  readingTime Int
-  featured    Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  categories  CategoryOnBlog[]
-  tags        TagOnBlog[]
-  comments    Comment[]
-  views       BlogView[]
-  viewCount   Int       @default(0)
+  id           String           @id @default(uuid())
+  slug         String           @unique
+  title        String
+  description  String
+  date         DateTime
+  image        String
+  content      String
+  readingTime  Int
+  featured     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  authorId     String
+  viewCount    Int              @default(0)
+  author       User             @relation(fields: [authorId], references: [id])
+  BlogBookmark BlogBookmark[]
+  BlogLike     BlogLike[]
+  views        BlogView[]
+  categories   CategoryOnBlog[]
+  comments     Comment[]
+  tags         TagOnBlog[]
 }
-
-
 
 model Comment {
   id        String    @id @default(uuid())
@@ -59,9 +61,9 @@ model Comment {
   updatedAt DateTime  @updatedAt
   blogId    String
   authorId  String
-  parentId  String?   // Add this field for nested comments
-  blog      Blog      @relation(fields: [blogId], references: [id])
+  parentId  String?
   author    User      @relation(fields: [authorId], references: [id])
+  blog      Blog      @relation(fields: [blogId], references: [id])
   parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[] @relation("CommentReplies")
 }
@@ -84,19 +86,18 @@ model BlogView {
   createdAt DateTime @default(now())
   blog      Blog     @relation(fields: [blogId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
-
   @@unique([blogId, userId])
 }
 
 model Category {
-  id    String @id @default(uuid())
-  name  String @unique
+  id    String           @id @default(uuid())
+  name  String           @unique
   blogs CategoryOnBlog[]
 }
 
 model Tag {
-  id    String @id @default(uuid())
-  name  String @unique
+  id    String      @id @default(uuid())
+  name  String      @unique
   blogs TagOnBlog[]
 }
 
@@ -116,4 +117,26 @@ model TagOnBlog {
   tag    Tag    @relation(fields: [tagId], references: [id])
 
   @@id([blogId, tagId])
+}
+
+model BlogBookmark {
+  id        String   @id
+  blogId    String
+  userId    String
+  createdAt DateTime @default(now())
+  Blog      Blog     @relation(fields: [blogId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
+
+  @@unique([blogId, userId])
+}
+
+model BlogLike {
+  id        String   @id
+  blogId    String
+  userId    String
+  createdAt DateTime @default(now())
+  Blog      Blog     @relation(fields: [blogId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
+
+  @@unique([blogId, userId])
 }

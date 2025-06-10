@@ -306,6 +306,8 @@ export const getBlogById = async (req: Request, res: Response) => {
       categories: blog.categories.map((c) => c.category.name),
       tags: blog.tags.map((t) => t.tag.name),
       viewCount: blog._count.views,
+      likeCount: await prisma.blogLike.count({ where: { blogId: id } }),
+      bookmarkCount: await prisma.blogBookmark.count({ where: { blogId: id } }),
       author: {
         id: blog.author.id,
         name: blog.author.name,
@@ -716,6 +718,197 @@ export const recordBlogView = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({ message: "View recorded" });
   } catch (error) {
     console.error("Record blog view error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * Like/Unlike a blog
+ */
+export const toggleBlogLike = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id: blogId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    // Check if blog exists
+    const blog = await prisma.blog.findUnique({
+      where: { id: blogId },
+    });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // Check if user already liked the blog
+    const existingLike = await prisma.blogLike.findFirst({
+      where: {
+        blogId,
+        userId,
+      },
+    });
+
+    if (existingLike) {
+      // Unlike
+      await prisma.blogLike.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+
+      // Get updated like count
+      const likeCount = await prisma.blogLike.count({
+        where: { blogId },
+      });
+
+      return res.status(200).json({
+        message: "Blog unliked successfully",
+        liked: false,
+        likeCount,
+      });
+    }
+
+    // Like
+    await prisma.blogLike.create({
+      data: {
+        id: `${blogId}-${userId}`, // Create a composite ID
+        blogId,
+        userId,
+      },
+    });
+
+    // Get updated like count
+    const likeCount = await prisma.blogLike.count({
+      where: { blogId },
+    });
+
+    return res.status(200).json({
+      message: "Blog liked successfully",
+      liked: true,
+      likeCount,
+    });
+  } catch (error) {
+    console.error("Toggle blog like error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * Bookmark/Unbookmark a blog
+ */
+export const toggleBlogBookmark = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id: blogId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    // Check if blog exists
+    const blog = await prisma.blog.findUnique({
+      where: { id: blogId },
+    });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // Check if user already bookmarked the blog
+    const existingBookmark = await prisma.blogBookmark.findFirst({
+      where: {
+        blogId,
+        userId,
+      },
+    });
+
+    if (existingBookmark) {
+      // Remove bookmark
+      await prisma.blogBookmark.delete({
+        where: {
+          id: existingBookmark.id,
+        },
+      });
+
+      // Get updated bookmark count
+      const bookmarkCount = await prisma.blogBookmark.count({
+        where: { blogId },
+      });
+
+      return res.status(200).json({
+        message: "Blog bookmark removed successfully",
+        bookmarked: false,
+        bookmarkCount,
+      });
+    }
+
+    // Add bookmark
+    await prisma.blogBookmark.create({
+      data: {
+        id: `${blogId}-${userId}`, // Create a composite ID
+        blogId,
+        userId,
+      },
+    });
+
+    // Get updated bookmark count
+    const bookmarkCount = await prisma.blogBookmark.count({
+      where: { blogId },
+    });
+
+    return res.status(200).json({
+      message: "Blog bookmarked successfully",
+      bookmarked: true,
+      bookmarkCount,
+    });
+  } catch (error) {
+    console.error("Toggle blog bookmark error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * Get blog interaction status for current user
+ */
+export const getBlogInteractionStatus = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const { id: blogId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    // Get likes and bookmarks count along with user's status
+    const [liked, bookmarked, likeCount, bookmarkCount] = await Promise.all([
+      prisma.blogLike.findFirst({
+        where: { blogId, userId },
+      }),
+      prisma.blogBookmark.findFirst({
+        where: { blogId, userId },
+      }),
+      prisma.blogLike.count({
+        where: { blogId },
+      }),
+      prisma.blogBookmark.count({
+        where: { blogId },
+      }),
+    ]);
+
+    return res.status(200).json({
+      liked: !!liked,
+      bookmarked: !!bookmarked,
+      likeCount,
+      bookmarkCount,
+    });
+  } catch (error) {
+    console.error("Get blog interaction status error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };

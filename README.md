@@ -203,6 +203,32 @@ This endpoint logs out the user by clearing the authentication cookies.
 
 - **URL**: `/api/blogs/blog/:id`
 - **Method**: `GET`
+- **Response**:
+
+```json
+{
+  "id": "blog-uuid",
+  "title": "Getting Started with Next.js 15",
+  "slug": "getting-started-with-nextjs-15",
+  "description": "Learn how to build modern web applications...",
+  "content": "# Getting Started with Next.js 15...",
+  "image": "https://example.com/blog-image.jpg",
+  "date": "2024-01-20T12:00:00Z",
+  "readingTime": 5,
+  "featured": true,
+  "viewCount": 1250,
+  "likeCount": 42,
+  "bookmarkCount": 15,
+  "author": {
+    "id": "user-uuid",
+    "name": "Jane Smith",
+    "bio": "Frontend Developer",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  "categories": ["Web Development", "React"],
+  "tags": ["nextjs", "react", "typescript"]
+}
+```
 
 #### Get Blog by Slug
 
@@ -224,6 +250,78 @@ This endpoint logs out the user by clearing the authentication cookies.
 - **URL**: `/api/blogs/blog/:id/view`
 - **Method**: `POST`
 - **Auth**: Required
+
+#### Like Blog
+
+Toggles the like status of a blog for the authenticated user.
+
+- **URL**: `/api/blogs/blog/:id/like`
+- **Method**: `POST`
+- **Auth**: Required
+- **Response**:
+
+```json
+{
+  "message": "Blog liked successfully",
+  "liked": true,
+  "likeCount": 42
+}
+```
+
+Or when unliking:
+
+```json
+{
+  "message": "Blog unliked successfully",
+  "liked": false,
+  "likeCount": 41
+}
+```
+
+#### Bookmark Blog
+
+Toggles the bookmark status of a blog for the authenticated user.
+
+- **URL**: `/api/blogs/blog/:id/bookmark`
+- **Method**: `POST`
+- **Auth**: Required
+- **Response**:
+
+```json
+{
+  "message": "Blog bookmarked successfully",
+  "bookmarked": true,
+  "bookmarkCount": 15
+}
+```
+
+Or when removing bookmark:
+
+```json
+{
+  "message": "Blog bookmark removed successfully",
+  "bookmarked": false,
+  "bookmarkCount": 14
+}
+```
+
+#### Get Blog Interaction Status
+
+Returns the current user's interaction status with a blog (likes and bookmarks).
+
+- **URL**: `/api/blogs/blog/:id/interaction`
+- **Method**: `GET`
+- **Auth**: Required
+- **Response**:
+
+```json
+{
+  "liked": true,
+  "bookmarked": false,
+  "likeCount": 42,
+  "bookmarkCount": 15
+}
+```
 
 ### Users
 

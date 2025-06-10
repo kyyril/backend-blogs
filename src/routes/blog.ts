@@ -9,6 +9,9 @@ import {
   deleteBlog,
   recordBlogView,
   getBlogById,
+  toggleBlogLike,
+  toggleBlogBookmark,
+  getBlogInteractionStatus,
 } from "../controllers/blogController";
 import { authenticate } from "../middleware/auth";
 import { validateBlogCreation } from "../middleware/validate";
@@ -39,6 +42,11 @@ router.put(
 );
 router.delete("/blog/:id", authenticate, deleteBlog);
 router.post("/blog/:id/view", authenticate, recordBlogView);
+
+// Interaction routes
+router.post("/blog/:id/like", authenticate, toggleBlogLike);
+router.post("/blog/:id/bookmark", authenticate, toggleBlogBookmark);
+router.get("/blog/:id/interaction", authenticate, getBlogInteractionStatus);
 
 // Slug route - keep at the end to avoid conflicts
 router.get("/:slug", getBlogBySlug);
