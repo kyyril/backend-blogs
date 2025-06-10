@@ -5,6 +5,74 @@ import { AuthRequest } from "../types";
 import { handleCategories, handleTags } from "../utils/blogHelpers";
 
 /**
+ * Helper function to format blog data consistently
+ */
+const formatBlogData = async (blog: any, userId?: string) => {
+  // Get counts in parallel for better performance
+  const [likeCount, bookmarkCount, commentCount, viewCount] = await Promise.all(
+    [
+      prisma.blogLike.count({ where: { blogId: blog.id } }),
+      prisma.blogBookmark.count({ where: { blogId: blog.id } }),
+      prisma.comment.count({ where: { blogId: blog.id } }),
+      prisma.blogView.count({ where: { blogId: blog.id } }),
+    ]
+  );
+
+  // Get user interaction status if userId is provided
+  let userInteractions = {
+    liked: false,
+    bookmarked: false,
+  };
+
+  if (userId) {
+    const [liked, bookmarked] = await Promise.all([
+      prisma.blogLike.findFirst({ where: { blogId: blog.id, userId } }),
+      prisma.blogBookmark.findFirst({ where: { blogId: blog.id, userId } }),
+    ]);
+
+    userInteractions = {
+      liked: !!liked,
+      bookmarked: !!bookmarked,
+    };
+  }
+
+  return {
+    ...blog,
+    categories: blog.categories?.map((c: any) => c.category.name) || [],
+    tags: blog.tags?.map((t: any) => t.tag.name) || [],
+    viewCount,
+    likeCount,
+    bookmarkCount,
+    commentCount,
+    ...userInteractions,
+  };
+};
+
+/**
+ * Helper function to get blog include options
+ */
+const getBlogIncludeOptions = () => ({
+  author: {
+    select: {
+      id: true,
+      name: true,
+      bio: true,
+      avatar: true,
+    },
+  },
+  categories: {
+    include: {
+      category: true,
+    },
+  },
+  tags: {
+    include: {
+      tag: true,
+    },
+  },
+});
+
+/**
  * Create a new blog post
  */
 export const createBlog = async (req: AuthRequest, res: Response) => {
@@ -89,34 +157,11 @@ export const createBlog = async (req: AuthRequest, res: Response) => {
     // Fetch the complete blog with relations
     const completeBlog = await prisma.blog.findUnique({
       where: { id: blog.id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
     // Format the response
-    const formattedBlog = {
-      ...completeBlog,
-      categories: completeBlog?.categories.map((c) => c.category.name) || [],
-      tags: completeBlog?.tags.map((t) => t.tag.name) || [],
-    };
+    const formattedBlog = await formatBlogData(completeBlog, userId);
 
     return res.status(201).json({
       message: "Blog created successfully",
@@ -147,34 +192,13 @@ export const getAllBlogs = async (req: Request, res: Response) => {
       orderBy: {
         date: "desc",
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
-    // Format the response
-    const formattedBlogs = blogs.map((blog) => ({
-      ...blog,
-      categories: blog.categories.map((c) => c.category.name),
-      tags: blog.tags.map((t) => t.tag.name),
-    }));
+    // Format the response - batch process for better performance
+    const formattedBlogs = await Promise.all(
+      blogs.map((blog) => formatBlogData(blog))
+    );
 
     return res.status(200).json({
       blogs: formattedBlogs,
@@ -201,26 +225,7 @@ export const getBlogBySlug = async (req: Request, res: Response) => {
     // Find the blog
     const blog = await prisma.blog.findUnique({
       where: { slug },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
     if (!blog) {
@@ -228,11 +233,7 @@ export const getBlogBySlug = async (req: Request, res: Response) => {
     }
 
     // Format the response
-    const formattedBlog = {
-      ...blog,
-      categories: blog.categories.map((c) => c.category.name),
-      tags: blog.tags.map((t) => t.tag.name),
-    };
+    const formattedBlog = await formatBlogData(blog);
 
     return res.status(200).json(formattedBlog);
   } catch (error) {
@@ -263,31 +264,7 @@ export const getBlogById = async (req: Request, res: Response) => {
     // Use Prisma's findUnique with complete blog data
     const blog = await prisma.blog.findUnique({
       where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-        _count: {
-          select: {
-            views: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
     console.log("3. Prisma query result:", blog ? "Found" : "Not found");
@@ -301,20 +278,7 @@ export const getBlogById = async (req: Request, res: Response) => {
     }
 
     // Format the response data
-    const formattedBlog = {
-      ...blog,
-      categories: blog.categories.map((c) => c.category.name),
-      tags: blog.tags.map((t) => t.tag.name),
-      viewCount: blog._count.views,
-      likeCount: await prisma.blogLike.count({ where: { blogId: id } }),
-      bookmarkCount: await prisma.blogBookmark.count({ where: { blogId: id } }),
-      author: {
-        id: blog.author.id,
-        name: blog.author.name,
-        bio: blog.author.bio,
-        avatar: blog.author.avatar,
-      },
-    };
+    const formattedBlog = await formatBlogData(blog);
 
     console.log("4. Successfully formatted blog data");
     return res.status(200).json(formattedBlog);
@@ -374,34 +338,13 @@ export const searchBlogs = async (req: Request, res: Response) => {
       orderBy: {
         date: "desc",
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
     // Format the response
-    const formattedBlogs = blogs.map((blog) => ({
-      ...blog,
-      categories: blog.categories.map((c) => c.category.name),
-      tags: blog.tags.map((t) => t.tag.name),
-    }));
+    const formattedBlogs = await Promise.all(
+      blogs.map((blog) => formatBlogData(blog))
+    );
 
     return res.status(200).json({
       blogs: formattedBlogs,
@@ -466,34 +409,13 @@ export const getBlogsByCategory = async (req: Request, res: Response) => {
       orderBy: {
         date: "desc",
       },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
     // Format the response
-    const formattedBlogs = blogs.map((blog) => ({
-      ...blog,
-      categories: blog.categories.map((c) => c.category.name),
-      tags: blog.tags.map((t) => t.tag.name),
-    }));
+    const formattedBlogs = await Promise.all(
+      blogs.map((blog) => formatBlogData(blog))
+    );
 
     return res.status(200).json({
       category: categoryEntity.name,
@@ -614,34 +536,11 @@ export const updateBlog = async (req: AuthRequest, res: Response) => {
     // Fetch updated blog with relations
     const completeBlog = await prisma.blog.findUnique({
       where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatar: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      include: getBlogIncludeOptions(),
     });
 
     // Format the response
-    const formattedBlog = {
-      ...completeBlog,
-      categories: completeBlog?.categories.map((c) => c.category.name) || [],
-      tags: completeBlog?.tags.map((t) => t.tag.name) || [],
-    };
+    const formattedBlog = await formatBlogData(completeBlog, userId);
 
     return res.status(200).json({
       message: "Blog updated successfully",
@@ -682,6 +581,8 @@ export const deleteBlog = async (req: AuthRequest, res: Response) => {
       prisma.tagOnBlog.deleteMany({ where: { blogId: id } }),
       prisma.comment.deleteMany({ where: { blogId: id } }),
       prisma.blogView.deleteMany({ where: { blogId: id } }),
+      prisma.blogLike.deleteMany({ where: { blogId: id } }),
+      prisma.blogBookmark.deleteMany({ where: { blogId: id } }),
       prisma.blog.delete({ where: { id } }),
     ]);
 
@@ -701,6 +602,21 @@ export const recordBlogView = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
+    // Check if user already viewed this blog (prevent duplicate views)
+    const existingView = await prisma.blogView.findFirst({
+      where: {
+        blogId: id,
+        userId,
+      },
+    });
+
+    if (existingView) {
+      return res.status(200).json({
+        message: "View already recorded",
+        viewCount: await prisma.blogView.count({ where: { blogId: id } }),
+      });
+    }
+
     // Record view
     await prisma.blogView.create({
       data: {
@@ -709,13 +625,15 @@ export const recordBlogView = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // Increment view count
-    await prisma.blog.update({
-      where: { id },
-      data: { viewCount: { increment: 1 } },
+    // Get updated view count
+    const viewCount = await prisma.blogView.count({
+      where: { blogId: id },
     });
 
-    return res.status(200).json({ message: "View recorded" });
+    return res.status(200).json({
+      message: "View recorded",
+      viewCount,
+    });
   } catch (error) {
     console.error("Record blog view error:", error);
     return res.status(500).json({ message: "Server error" });
@@ -885,8 +803,15 @@ export const getBlogInteractionStatus = async (
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    // Get likes and bookmarks count along with user's status
-    const [liked, bookmarked, likeCount, bookmarkCount] = await Promise.all([
+    // Get all counts and user interactions in parallel
+    const [
+      liked,
+      bookmarked,
+      likeCount,
+      bookmarkCount,
+      commentCount,
+      viewCount,
+    ] = await Promise.all([
       prisma.blogLike.findFirst({
         where: { blogId, userId },
       }),
@@ -899,6 +824,12 @@ export const getBlogInteractionStatus = async (
       prisma.blogBookmark.count({
         where: { blogId },
       }),
+      prisma.comment.count({
+        where: { blogId },
+      }),
+      prisma.blogView.count({
+        where: { blogId },
+      }),
     ]);
 
     return res.status(200).json({
@@ -906,6 +837,8 @@ export const getBlogInteractionStatus = async (
       bookmarked: !!bookmarked,
       likeCount,
       bookmarkCount,
+      commentCount,
+      viewCount,
     });
   } catch (error) {
     console.error("Get blog interaction status error:", error);
