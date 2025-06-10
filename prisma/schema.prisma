@@ -13,6 +13,11 @@ model User {
   name          String
   bio           String?
   avatar        String?
+  country       String?
+  twitterAcc    String?   
+  githubAcc     String?   
+  linkedinAcc   String?   
+  anotherAcc    String?
   googleId      String    @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -44,6 +49,8 @@ model Blog {
   views       BlogView[]
   viewCount   Int       @default(0)
 }
+
+
 
 model Comment {
   id        String    @id @default(uuid())

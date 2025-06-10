@@ -231,6 +231,7 @@ This endpoint logs out the user by clearing the authentication cookies.
 
 - **URL**: `/api/users/:userId`
 - **Method**: `GET`
+- **Auth**: Optional
 - **Response**:
 
 ```json
@@ -240,15 +241,61 @@ This endpoint logs out the user by clearing the authentication cookies.
   "email": "jane@example.com",
   "bio": "Frontend Developer and Next.js enthusiast",
   "avatar": "https://example.com/avatar.jpg",
-  "profileViews": 42,
+  "country": "United States",
+  "twitterAcc": "https://twitter.com/janesmith",
+  "githubAcc": "https://github.com/janesmith",
+  "linkedinAcc": "https://linkedin.com/in/janesmith",
+  "anotherAcc": "",
+  "createdAt": "2024-01-20T12:00:00Z",
+  "updatedAt": "2024-01-20T12:00:00Z",
   "_count": {
     "followers": 150,
     "following": 89,
     "blogs": 25
   },
-  "blogs": [
-    /* array of blog objects */
-  ]
+  "blogs": []
+}
+```
+
+#### Update User Profile
+
+Updates the authenticated user's profile information.
+
+- **URL**: `/api/users/profile`
+- **Method**: `PUT`
+- **Auth**: Required
+- **Body**:
+  - Multipart form data that can include:
+
+```json
+{
+  "name": "Jane Smith",
+  "bio": "Frontend Developer and Next.js enthusiast",
+  "country": "United States",
+  "twitterAcc": "https://twitter.com/janesmith",
+  "githubAcc": "https://github.com/janesmith",
+  "linkedinAcc": "https://linkedin.com/in/janesmith",
+  "anotherAcc": "",
+  "avatar": "[File Upload]" // Optional profile image
+}
+```
+
+- **Response**:
+
+```json
+{
+  "id": "user-uuid",
+  "name": "Jane Smith",
+  "email": "jane@example.com",
+  "bio": "Frontend Developer and Next.js enthusiast",
+  "avatar": "https://example.com/new-avatar.jpg",
+  "country": "United States",
+  "twitterAcc": "https://twitter.com/janesmith",
+  "githubAcc": "https://github.com/janesmith",
+  "linkedinAcc": "https://linkedin.com/in/janesmith",
+  "anotherAcc": "",
+  "createdAt": "2024-01-20T12:00:00Z",
+  "updatedAt": "2024-01-20T13:00:00Z"
 }
 ```
 
@@ -367,3 +414,7 @@ Flow Notifikasi Komentar/like blog (Tanpa Real-Time)
 ➡️ frontend melakukan GET request ke Express.js (GET /api/notifications?userId=userB) untuk mengambil notifikasi.
 4️⃣ User B membaca notifikasi (misalnya klik).
 ➡️ frontend kirim PATCH request ke Express.js (PATCH /api/notifications/:id) untuk menandai notifikasi sudah dibaca.
+
+```
+
+```
