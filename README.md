@@ -497,6 +497,38 @@ Updates the authenticated user's profile information.
 
 ```
 
+
+#### Create/Delete like Blog
+- **URL**: `/api/blogs/:id/like`
+- **Method**: `POST`
+- **Auth**: Required
+- **Body**: json
+
+#### Create/Delete like Bookmark
+- **URL**: `/api/blogs/:id/bookmark`
+- **Method**: `POST`
+- **Auth**: Required
+- **Body**: json
+
+#### Get Interaction Status
+- **URL**: `/api/blogs/:id/interaction`
+- **Method**: `GET`
+- **Auth**: Required
+
+
+
+#### Get Bookmarks
+- **URL**: `/api/blogs/bookmarks`
+- **Method**: `GET`
+- **Auth**: Required
+
+#### Get Blog by own
+- **URL**: `/api/blogs/bookmarks`
+- **Method**: `GET`
+- **Auth**: Required
+
+
+
 ```
 
 ### TODO

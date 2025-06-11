@@ -56,9 +56,9 @@ router.get("/blog/:id/interaction", authenticate, getBlogInteractionStatus);
 router.get("/:slug", getBlogBySlug);
 
 // Get user's bookmarked blogs
-router.get("/blog/bookmarks", authenticate, getUserBookmarks);
+router.get("/bookmarks", authenticate, getUserBookmarks);
 
 // Get user's own blogs
-router.get("/blog/my-blogs", authenticate, getUserBlogs);
+router.get("/my-blogs", authenticate, getUserBlogs);
 
 export default router;
