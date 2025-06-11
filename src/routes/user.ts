@@ -6,10 +6,14 @@ import {
   getFollowStatus,
   updateUser,
 } from "../controllers/userController";
+import { getUserBookmarks } from "../controllers/blogQueryController";
 import { authenticate } from "../middleware/auth";
 import { uploadAvatar } from "../middleware/upload";
 
 const router = express.Router();
+
+// Get user's bookmarked blogs - must be defined before /:userId routes to avoid path conflicts
+router.get("/bookmarks", authenticate, getUserBookmarks);
 
 router.get("/:userId", getUserProfile);
 router.post("/:userId/follow", authenticate, followUser);

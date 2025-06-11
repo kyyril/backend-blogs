@@ -40,7 +40,14 @@ export const authenticate = async (
       return res.status(401).json({ message: "User not found" });
     }
 
-    req.user = user;
+    // Convert null values to undefined to match AuthRequest type
+    req.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio ?? undefined,
+      avatar: user.avatar ?? undefined,
+    };
     next();
   } catch (error) {
     console.error("Authentication error:", error);

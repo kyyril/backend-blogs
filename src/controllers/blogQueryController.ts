@@ -354,14 +354,14 @@ export const getUserBookmarks = async (req: AuthRequest, res: Response) => {
         createdAt: "desc", // Assuming there's a createdAt field for bookmarks
       },
       include: {
-        blog: {
+        Blog: {
           include: getBlogIncludeOptions(),
         },
       },
     });
 
     // Extract and format blog data
-    const blogs = bookmarkedBlogs.map((bookmark) => bookmark.blog);
+    const blogs = bookmarkedBlogs.map((bookmark) => bookmark.Blog);
     const formattedBlogs = await Promise.all(
       blogs.map((blog) => formatBlogData(blog, userId))
     );

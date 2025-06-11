@@ -55,9 +55,6 @@ router.get("/blog/:id/interaction", authenticate, getBlogInteractionStatus);
 // Slug route - keep at the end to avoid conflicts
 router.get("/:slug", getBlogBySlug);
 
-// Get user's bookmarked blogs
-router.get("/bookmarks", authenticate, getUserBookmarks);
-
 // Get user's own blogs
 router.get("/my-blogs", authenticate, getUserBlogs);
 
