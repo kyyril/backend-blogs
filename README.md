@@ -226,7 +226,9 @@ This endpoint logs out the user by clearing the authentication cookies.
     "avatar": "https://example.com/avatar.jpg"
   },
   "categories": ["Web Development", "React"],
-  "tags": ["nextjs", "react", "typescript"]
+  "tags": ["nextjs", "react", "typescript"],
+  "liked": false,
+  "bookmarked": false
 }
 ```
 
@@ -243,6 +245,11 @@ This endpoint logs out the user by clearing the authentication cookies.
 #### Get Blogs by Category
 
 - **URL**: `/api/blogs/category/:category?page=1&limit=10`
+- **Method**: `GET`
+
+#### Get Blogs by Tags
+
+- **URL**: `/api/blogs/tags/:tags?page=1&limit=10`
 - **Method**: `GET`
 
 #### Record Blog View
@@ -345,7 +352,7 @@ Returns the current user's interaction status with a blog (likes and bookmarks).
   "linkedinAcc": "https://linkedin.com/in/janesmith",
   "anotherAcc": "",
   "createdAt": "2024-01-20T12:00:00Z",
-  "updatedAt": "2024-01-20T12:00:00Z",
+  "updatedAt": "2024-01-20T13:00:00Z",
   "_count": {
     "followers": 150,
     "following": 89,
@@ -564,7 +571,10 @@ Updates the authenticated user's profile information.
 - **Method**: `GET`
 - **Auth**: Required
 
+#### Get Blogs by Tags
 
+-   **URL**: `/api/blogs/tags/:tags?page=1&limit=10`
+-   **Method**: `GET`
 
 #### Get Bookmarks
 - **URL**: `/api/blogs/bookmarks`

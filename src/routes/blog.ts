@@ -14,6 +14,7 @@ import {
   getAllBlogs,
   getBlogById,
   getBlogBySlug,
+  getBlogByTags,
   getBlogInteractionStatus,
   getBlogsByCategory,
   getFeaturedBlogs,
@@ -36,6 +37,7 @@ router.get("/", getAllBlogs);
 router.get("/search", searchBlogs);
 router.get("/category/:category", getBlogsByCategory);
 router.get("/featured", getFeaturedBlogs);
+router.get("/tags/:tags", getBlogByTags);
 
 // Document routes
 router.get("/blog/:id", getBlogById);
