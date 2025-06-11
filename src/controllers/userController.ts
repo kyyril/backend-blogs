@@ -35,6 +35,38 @@ export const getUserProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: userId,
+      },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
     const formattedUser: UserProfile = {
       ...user,
       name: user.name || "",
@@ -50,6 +82,8 @@ export const getUserProfile = async (req: Request, res: Response) => {
           return await formatBlogData(blog, user.id);
         })
       ),
+      followers: followers.map((follow) => follow.follower),
+      following: following.map((follow) => follow.following),
     };
 
     return res.status(200).json(formattedUser);
@@ -222,6 +256,60 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     return res.status(200).json(updatedUser);
   } catch (error) {
     console.error("Update user error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserFollowers = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: userId,
+      },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(followers.map((follow) => follow.follower));
+  } catch (error) {
+    console.error("Get user followers error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserFollowing = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(following.map((follow) => follow.following));
+  } catch (error) {
+    console.error("Get user following error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };

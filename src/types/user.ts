@@ -1,37 +1,32 @@
+import { FormattedBlog } from "./blog";
+
+export {};
+
 export interface UserProfile {
   id: string;
-  name: string | null;
   email: string;
-  bio: string | null;
+  name: string;
+  bio: string;
   avatar: string | null;
-  country: string | null;
-  twitterAcc?: string;
-  githubAcc?: string;
-  linkedinAcc?: string;
-  anotherAcc?: string;
+  country: string;
+  twitterAcc: string;
+  githubAcc: string;
+  linkedinAcc: string;
+  anotherAcc: string;
   createdAt: Date;
   updatedAt: Date;
-  blogs: {
+  profileViews: number;
+  blogs: FormattedBlog[];
+  followers: {
     id: string;
-    title: string;
-    slug: string;
-    description: string;
-    categories: string[];
-    tags: string[];
+    name: string;
+    email: string;
+    avatar: string | null;
   }[];
-  _count: {
-    followers: number;
-    following: number;
-    blogs: number;
-  };
-}
-
-export interface UpdateUserInput {
-  name?: string;
-  bio?: string;
-  country?: string;
-  twitterAcc?: string;
-  githubAcc?: string;
-  linkedinAcc?: string;
-  anotherAcc?: string;
+  following: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+  }[];
 }

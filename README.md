@@ -332,7 +332,7 @@ Returns the current user's interaction status with a blog (likes and bookmarks).
 - **Auth**: Optional
 - **Response**:
 
-```json
+````json
 {
   "id": "user-uuid",
   "name": "Jane Smith",
@@ -351,8 +351,57 @@ Returns the current user's interaction status with a blog (likes and bookmarks).
     "following": 89,
     "blogs": 25
   },
-  "blogs": []
+  "blogs": [],
+  "followers": [],
+  "following": []
 }
+
+#### Get User Followers
+
+- **URL**: `/api/users/:userId/followers`
+- **Method**: `GET`
+- **Auth**: Optional
+- **Response**:
+
+```json
+[
+  {
+    "id": "user-uuid",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  {
+    "id": "user-uuid2",
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "avatar": "https://example.com/avatar2.jpg"
+  }
+]
+````
+
+#### Get User Following
+
+- **URL**: `/api/users/:userId/following`
+- **Method**: `GET`
+- **Auth**: Optional
+- **Response**:
+
+```json
+[
+  {
+    "id": "user-uuid",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "avatar": "https://example.com/avatar.jpg"
+  },
+  {
+    "id": "user-uuid2",
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "avatar": "https://example.com/avatar2.jpg"
+  }
+]
 ```
 
 #### Update User Profile

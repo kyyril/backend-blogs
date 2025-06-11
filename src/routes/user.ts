@@ -5,6 +5,8 @@ import {
   unfollowUser,
   getFollowStatus,
   updateUser,
+  getUserFollowers,
+  getUserFollowing,
 } from "../controllers/userController";
 import { getUserBookmarks } from "../controllers/blogQueryController";
 import { authenticate } from "../middleware/auth";
@@ -19,6 +21,8 @@ router.get("/:userId", getUserProfile);
 router.post("/:userId/follow", authenticate, followUser);
 router.delete("/:userId/unfollow", authenticate, unfollowUser);
 router.get("/:userId/follow-status", authenticate, getFollowStatus);
+router.get("/:userId/followers", getUserFollowers);
+router.get("/:userId/following", getUserFollowing);
 router.put("/profile", authenticate, uploadAvatar, updateUser);
 
 export default router;
