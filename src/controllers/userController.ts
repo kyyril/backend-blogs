@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../index";
 import { AuthRequest } from "../types";
 import { UserProfile } from "../types/user";
+import { formatBlogData } from "../utils/blogHelpers";
 
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
@@ -44,11 +45,11 @@ export const getUserProfile = async (req: Request, res: Response) => {
       githubAcc: user.githubAcc || "",
       linkedinAcc: user.linkedinAcc || "",
       anotherAcc: user.anotherAcc || "",
-      blogs: user.blogs.map((blog) => ({
-        ...blog,
-        categories: blog.categories.map((c) => c.category.name),
-        tags: blog.tags.map((t) => t.tag.name),
-      })),
+      blogs: await Promise.all(
+        user.blogs.map(async (blog) => {
+          return await formatBlogData(blog, user.id);
+        })
+      ),
     };
 
     return res.status(200).json(formattedUser);

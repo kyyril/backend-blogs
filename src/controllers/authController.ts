@@ -23,7 +23,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "your-refresh-secret";
-const ACCESS_TOKEN_EXPIRES = "15m"; // 15 minutes
+const ACCESS_TOKEN_EXPIRES = "60m"; // 15 minutes
 const REFRESH_TOKEN_EXPIRES = "7d"; // 7 days
 
 export const googleAuth = async (req: Request, res: Response) => {
