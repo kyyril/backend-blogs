@@ -1,21 +1,25 @@
 import express from "express";
-import {
-  createBlog,
-  getAllBlogs,
-  getBlogBySlug,
-  searchBlogs,
-  getBlogsByCategory,
-  updateBlog,
-  deleteBlog,
-  recordBlogView,
-  getBlogById,
-  toggleBlogLike,
-  toggleBlogBookmark,
-  getBlogInteractionStatus,
-} from "../controllers/blogController";
 import { authenticate } from "../middleware/auth";
 import { validateBlogCreation } from "../middleware/validate";
 import { uploadBlogImage } from "../middleware/upload";
+import {
+  createBlog,
+  deleteBlog,
+  recordBlogView,
+  toggleBlogBookmark,
+  toggleBlogLike,
+  updateBlog,
+} from "../controllers/blogMutationController";
+import {
+  getAllBlogs,
+  getBlogById,
+  getBlogBySlug,
+  getBlogInteractionStatus,
+  getBlogsByCategory,
+  getUserBlogs,
+  getUserBookmarks,
+  searchBlogs,
+} from "../controllers/blogQueryController";
 
 const router = express.Router();
 
@@ -50,5 +54,11 @@ router.get("/blog/:id/interaction", authenticate, getBlogInteractionStatus);
 
 // Slug route - keep at the end to avoid conflicts
 router.get("/:slug", getBlogBySlug);
+
+// Get user's bookmarked blogs
+router.get("/blog/bookmarks", authenticate, getUserBookmarks);
+
+// Get user's own blogs
+router.get("/blog/my-blogs", authenticate, getUserBlogs);
 
 export default router;
