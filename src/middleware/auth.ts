@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../index";
 import { AuthRequest } from "../types";
@@ -70,4 +70,5 @@ export const authenticate = async (
 
     return res.status(401).json({ message: "Not authorized" });
   }
+  return;
 };

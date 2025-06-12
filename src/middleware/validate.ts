@@ -18,7 +18,7 @@ const handleValidationErrors = (
     });
   }
 
-  next();
+  return next();
 };
 
 /**

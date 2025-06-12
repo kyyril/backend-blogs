@@ -23,7 +23,7 @@ const storage = new CloudinaryStorage({
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
       return `${file.fieldname}_${uniqueSuffix}`;
     },
-  },
+  } as any,
 });
 
 // Create multer instance

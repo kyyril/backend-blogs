@@ -11,10 +11,7 @@ export interface AuthRequest extends Request {
     bio?: string;
     avatar?: string;
   };
-  file?: {
-    path: string;
-    filename: string;
-  };
+  file?: Express.Multer.File;
 }
 
 /**

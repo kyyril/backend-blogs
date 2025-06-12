@@ -21,8 +21,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      process.env.FRONTEND_URL,
-    ].filter(Boolean), // Filter out undefined values
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    ],
     credentials: true, // Allow cookies to be sent
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: [
@@ -45,7 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", routes);
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
@@ -53,9 +53,9 @@ app.get("/health", (req, res) => {
 app.use(
   (
     err: any,
-    req: express.Request,
+    _req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    _next: express.NextFunction
   ) => {
     console.error(err.stack);
     res.status(err.status || 500).json({

@@ -19,7 +19,6 @@ import {
   getBlogsByCategory,
   getFeaturedBlogs,
   getUserBlogs,
-  getUserBookmarks,
   searchBlogs,
 } from "../controllers/blogQueryController";
 
