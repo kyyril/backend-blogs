@@ -14,12 +14,12 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: (req: any, file: any) => {
+    folder: (_req: any, file: any) => {
       return file.fieldname === "avatar" ? "user_avatars" : "blog_images";
     },
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
     transformation: [{ width: 1000, crop: "limit" }],
-    public_id: (req: any, file: any) => {
+    public_id: (_req: any, file: any) => {
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
       return `${file.fieldname}_${uniqueSuffix}`;
     },
@@ -32,7 +32,7 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
     } else {
@@ -86,6 +86,6 @@ export const uploadAvatar = (
             : err.message,
       });
     }
-    next();
+    return next();
   });
 };

@@ -181,7 +181,7 @@ export const updateBlog = async (req: AuthRequest, res: Response) => {
     }
 
     // Update the blog with provided fields
-    const updatedBlog = await prisma.blog.update({
+    await prisma.blog.update({
       where: { id },
       data: updateData,
     });
