@@ -62,7 +62,7 @@ export const authenticate = async (
       res.clearCookie("access_token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         path: "/",
       });
       return res.status(401).json({ message: "Token expired" });

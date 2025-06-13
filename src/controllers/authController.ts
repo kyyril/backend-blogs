@@ -23,6 +23,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "your-refresh-secret";
+
 const ACCESS_TOKEN_EXPIRES = "60m"; // 15 minutes
 const REFRESH_TOKEN_EXPIRES = "7d"; // 7 days
 
@@ -81,7 +82,7 @@ export const googleAuth = async (req: Request, res: Response) => {
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 15 * 60 * 1000, // 15 minutes
       path: "/",
     });
@@ -89,7 +90,7 @@ export const googleAuth = async (req: Request, res: Response) => {
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/",
     });
@@ -119,10 +120,17 @@ export const refreshToken = async (req: Request, res: Response) => {
     }
 
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as {
-      userId: string;
-      email: string;
-    };
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, REFRESH_SECRET) as {
+        userId: string;
+        email: string;
+      };
+    } catch (error) {
+      console.error("Refresh token verification failed:", error);
+      // Re-throw to be caught by the outer catch block
+      throw error;
+    }
 
     // Get user from database
     const user = await prisma.user.findUnique({
@@ -170,14 +178,14 @@ export const refreshToken = async (req: Request, res: Response) => {
     res.clearCookie("access_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     });
 
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     });
 
@@ -191,14 +199,14 @@ export const logout = async (_req: Request, res: Response) => {
     res.clearCookie("access_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     });
 
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     });
 
