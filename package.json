@@ -10,7 +10,8 @@
     "migrate": "prisma migrate dev",
     "generate": "prisma generate",
     "studio": "prisma studio",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
@@ -19,13 +20,14 @@
     "cloudinary": "^1.41.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
     "express-validator": "^7.0.1",
     "google-auth-library": "^9.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "serverless-http": "^3.2.0",
     "slugify": "^1.6.6"
   },
   "devDependencies": {
@@ -44,5 +46,18 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyyril/backend-blogs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kyyril/backend-blogs/issues"
+  },
+  "homepage": "https://github.com/kyyril/backend-blogs#readme",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
