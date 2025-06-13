@@ -21,6 +21,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
+      "https://syncblog.pages.dev",
       ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
     ],
     credentials: true, // Allow cookies to be sent
