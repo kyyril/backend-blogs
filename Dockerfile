@@ -6,6 +6,7 @@ WORKDIR /app
 # Copy package.json and package-lock.json first to leverage Docker cache
 COPY package*.json ./
 COPY prisma ./prisma
+COPY .env ./.env
 RUN npm install
 RUN npx prisma generate
 
