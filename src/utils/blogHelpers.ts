@@ -111,6 +111,7 @@ export const getBlogIncludeOptions = () => ({
       name: true,
       bio: true,
       avatar: true,
+      username: true,
     },
   },
   categories: {

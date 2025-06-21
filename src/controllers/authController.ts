@@ -3,6 +3,7 @@ import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import { prisma } from "../index";
 import { AuthRequest } from "../types";
+import { generateUniqueUsername } from "../utils/userHelpers";
 
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
@@ -48,10 +49,14 @@ export const googleAuth = async (req: Request, res: Response) => {
     });
 
     if (!user) {
+      // Generate unique username from email
+      const username = await generateUniqueUsername(email);
+
       user = await prisma.user.create({
         data: {
           name: name || "Google User",
           email,
+          username,
           googleId: sub,
           avatar: picture || null,
         },
@@ -101,6 +106,7 @@ export const googleAuth = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        username: user.username,
         bio: user.bio,
         avatar: user.avatar || picture,
       },
@@ -139,6 +145,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         id: true,
         name: true,
         email: true,
+        username: true,
         bio: true,
         avatar: true,
       },

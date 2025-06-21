@@ -8,6 +8,7 @@ export interface AuthRequest extends Request {
     id: string;
     name: string;
     email: string;
+    username: string;
     bio?: string;
     avatar?: string;
   };

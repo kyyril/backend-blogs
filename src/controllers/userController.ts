@@ -93,6 +93,95 @@ export const getUserProfile = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserProfileByUsername = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: {
+        blogs: {
+          include: {
+            categories: {
+              include: { category: true },
+            },
+            tags: {
+              include: { tag: true },
+            },
+          },
+        },
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            blogs: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: user.id,
+      },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: user.id,
+      },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    const formattedUser: UserProfile = {
+      ...user,
+      name: user.name || "",
+      bio: user.bio || "",
+      avatar: user.avatar || "",
+      country: user.country || "",
+      twitterAcc: user.twitterAcc || "",
+      githubAcc: user.githubAcc || "",
+      linkedinAcc: user.linkedinAcc || "",
+      anotherAcc: user.anotherAcc || "",
+      blogs: await Promise.all(
+        user.blogs.map(async (blog) => {
+          return await formatBlogData(blog, user.id);
+        })
+      ),
+      followers: followers.map((follow) => follow.follower),
+      following: following.map((follow) => follow.following),
+    };
+
+    return res.status(200).json(formattedUser);
+  } catch (error) {
+    console.error("Get user profile by username error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const followUser = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
@@ -241,6 +330,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
         id: true,
         name: true,
         email: true,
+        username: true,
         bio: true,
         avatar: true,
         country: true,

@@ -5,6 +5,7 @@ export {};
 export interface UserProfile {
   id: string;
   email: string;
+  username: string;
   name: string;
   bio: string;
   avatar: string | null;

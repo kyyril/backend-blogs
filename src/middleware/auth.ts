@@ -31,6 +31,7 @@ export const authenticate = async (
         id: true,
         name: true,
         email: true,
+        username: true,
         bio: true,
         avatar: true,
       },
@@ -45,6 +46,7 @@ export const authenticate = async (
       id: user.id,
       name: user.name,
       email: user.email,
+      username: user.username,
       bio: user.bio ?? undefined,
       avatar: user.avatar ?? undefined,
     };

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getUserProfile,
+  getUserProfileByUsername,
   followUser,
   unfollowUser,
   getFollowStatus,
@@ -16,6 +17,9 @@ const router = express.Router();
 
 // Get user's bookmarked blogs - must be defined before /:userId routes to avoid path conflicts
 router.get("/bookmarks", authenticate, getUserBookmarks);
+
+// Get user profile by username - must be defined before /:userId to avoid conflicts
+router.get("/username/:username", getUserProfileByUsername);
 
 router.get("/:userId", getUserProfile);
 router.post("/:userId/follow", authenticate, followUser);
