@@ -31,6 +31,7 @@ export const createComment = async (
           select: {
             id: true,
             name: true,
+            username: true,
             avatar: true,
           },
         },
@@ -40,6 +41,7 @@ export const createComment = async (
               select: {
                 id: true,
                 name: true,
+                username: true,
                 avatar: true,
               },
             },
@@ -86,6 +88,7 @@ export const updateComment = async (
           select: {
             id: true,
             name: true,
+            username: true,
             avatar: true,
           },
         },
@@ -152,6 +155,7 @@ export const getComments = async (
           select: {
             id: true,
             name: true,
+            username: true,
             avatar: true,
           },
         },
@@ -161,6 +165,7 @@ export const getComments = async (
               select: {
                 id: true,
                 name: true,
+                username: true,
                 avatar: true,
               },
             },
